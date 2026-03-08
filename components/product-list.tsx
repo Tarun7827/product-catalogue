@@ -1,12 +1,20 @@
 "use client";
 
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 import { ProductGrid } from "@/components/product-grid";
 import { useProducts } from "@/hooks/use-products";
 
 export function ProductList() {
-  const { data: products = [], isLoading, isError } = useProducts();
+  const searchParams = useSearchParams();
+  const selectedCategory = searchParams.get("category");
+
+  const { data: allProducts = [], isLoading, isError } = useProducts();
+
+  // Filter products based on the selected category from URL query param.
+  const products = selectedCategory
+    ? allProducts.filter((product) => product.categoryId === selectedCategory)
+    : allProducts;
 
   if (isLoading) {
     return (
@@ -29,7 +37,7 @@ export function ProductList() {
     );
   }
 
-  if (!products.length) {
+  if (!allProducts.length) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600">
         No products found yet. Run <code className="rounded bg-slate-100 px-2 py-1">npm run seed</code>{" "}
@@ -38,18 +46,20 @@ export function ProductList() {
     );
   }
 
+  if (!products.length && selectedCategory) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600">
+        No products found in this category.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4">
         <p className="text-sm text-slate-600">
-          Showing <span className="font-semibold text-slate-900">{products.length}</span> products
+          Showing <span className="font-semibold text-slate-900">{products.length}</span> product{products.length !== 1 ? "s" : ""}
         </p>
-        <Link
-          href="/"
-          className="text-sm font-medium text-slate-900 transition hover:text-slate-600"
-        >
-          Back to home
-        </Link>
       </div>
 
       <ProductGrid products={products} />
