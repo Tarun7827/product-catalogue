@@ -10,10 +10,6 @@ export default function ProductsPage() {
         <h1 className="text-4xl font-bold tracking-tight text-slate-950">
           Browse products
         </h1>
-        <p className="max-w-2xl text-base leading-7 text-slate-600">
-          This page fetches products from the API route and renders them in a responsive
-          grid using React Query for client-side loading and caching.
-        </p>
       </div>
 
       <ProductList />
