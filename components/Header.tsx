@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
 import { Input } from "./ui/input";
 import LogoSK from "./icons/LogoSK";
 import CartIcon from "./icons/CartIcon";
@@ -10,13 +10,14 @@ import SearchIcon from "./icons/SearchIcon";
 
 export default function Header() {
   const [cartCount] = useState(3);
-
+  const router = useRouter();
   const handleSearch = () => {
     console.log("Search clicked");
   };
 
   const handleLogin = () => {
     console.log("Login");
+    router.push("/auth");
   };
 
   const handleRegister = () => {
@@ -92,15 +93,15 @@ export default function Header() {
               onClick={handleLogin}
               className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50"
             >
-              Login
+              Login/Register
             </button>
-            <button
+            {/* <button
               type="button"
               onClick={handleRegister}
               className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700"
             >
               Register
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

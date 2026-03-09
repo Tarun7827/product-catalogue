@@ -3,10 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { QueryProvider } from "@/components/providers/query-provider";
 import Header from "@/components/Header";
-import CategoryBar from "@/components/CategoryBar";
 
 import "./globals.css";
-
+import { ReduxProvider } from "./ReduxProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,11 +29,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} bg-slate-50 text-slate-900 antialiased`}>
-        <Header />
-        <QueryProvider>
-          <CategoryBar />
-          {children}
-        </QueryProvider>
+        <ReduxProvider>
+          <Header />
+          <QueryProvider>
+            {children}
+          </QueryProvider>
+        </ReduxProvider>
       </body>
     </html>
   );
