@@ -23,7 +23,7 @@ export default function CategoryBar() {
 
   if (isLoading) {
     return (
-      <div className="border-b border-slate-200 bg-white">
+      <div className="border-b border-slate-200 bg-white rounded-2xl">
         <div className="mx-auto max-w-7xl px-4 py-3">
           <div className="flex gap-3 overflow-x-auto">
             {Array.from({ length: 5 }).map((_, index) => (

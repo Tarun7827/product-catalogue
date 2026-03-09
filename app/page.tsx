@@ -1,4 +1,5 @@
 import { ProductList } from "@/components/product-list";
+import CategoryBar from "@/components/CategoryBar";
 
 export default function HomePage() {
   return (
@@ -12,6 +13,7 @@ export default function HomePage() {
         </h1>
       </div>
 
+      <CategoryBar />
       <ProductList />
     </main>
   );

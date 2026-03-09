@@ -1,4 +1,5 @@
 import { ProductList } from "@/components/product-list";
+import CategoryBar from "@/components/CategoryBar";
 
 export default function ProductsPage() {
   return (
@@ -11,7 +12,9 @@ export default function ProductsPage() {
           Browse products
         </h1>
       </div>
-
+      <div className="w-full mt-10 mb-10 rounded-full overflow-hidden border border-slate-200 bg-white p-4">
+        <CategoryBar />
+      </div>
       <ProductList />
     </main>
   );
