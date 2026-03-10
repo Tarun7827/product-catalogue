@@ -1,27 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Input } from "./ui/input";
 import LogoSK from "./icons/LogoSK";
 import CartIcon from "./icons/CartIcon";
 import SearchIcon from "./icons/SearchIcon";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/authSlice";
+import { getSupabaseBrowserClient } from "@/lib/supabse/browser-client";
+import type { RootState } from "@/lib/store/store";
+import { User } from "@supabase/supabase-js";
+
+function getDisplayName(user: User | null): string | null {
+  if (!user) return null;
+  console.log(user.user_metadata);
+  const name =
+    user.user_metadata?.displayName ??
+    user.user_metadata?.name ??
+    user.email?.split("@")[0];
+  return name ?? "Profile";
+}
 
 export default function Header() {
   const [cartCount] = useState(3);
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
+  const displayName = getDisplayName(user);
+  const supabase = getSupabaseBrowserClient();
+
+  // Sync Redux with current session on load (e.g. after refresh)
+  // useEffect(() => {
+  //   supabase.auth.getSession().then(({ data: { session } }) => {
+  //     dispatch(setUser(session?.user ?? null));
+  //   });
+  //   const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+  //     dispatch(setUser(session?.user ?? null));
+  //   });
+  //   return () => sub?.subscription.unsubscribe();
+  // }, [dispatch]);
+
+  // Keep Redux user state in sync with Supabase auth events
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        dispatch(setUser(session?.user ?? null));
+      }
+    );
+
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, [supabase, dispatch]);
+
   const handleSearch = () => {
     console.log("Search clicked");
   };
 
   const handleLogin = () => {
-    console.log("Login");
     router.push("/auth");
-  };
-
-  const handleRegister = () => {
-    console.log("Register");
   };
 
   const handleCartClick = () => {
@@ -88,20 +127,22 @@ export default function Header() {
 
           {/* Auth Buttons */}
           <div className="hidden items-center gap-2 sm:flex">
-            <button
-              type="button"
-              onClick={handleLogin}
-              className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50"
-            >
-              Login/Register
-            </button>
-            {/* <button
-              type="button"
-              onClick={handleRegister}
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700"
-            >
-              Register
-            </button> */}
+            {user ? (
+              <Link
+                href="/profile"
+                className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50"
+              >
+                {displayName ?? "Profile"}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={handleLogin}
+                className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50"
+              >
+                Login/Register
+              </button>
+            )}
           </div>
         </div>
       </div>
