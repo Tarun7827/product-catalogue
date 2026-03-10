@@ -9,6 +9,7 @@ import type { EmailPasswordFormData } from "./EmailPasswordForm";
 import EmailPasswordForm from "./EmailPasswordForm";
 import { useEffect, useState } from "react";
 import UserSession from "@/components/auth/UserSession";
+import { useRouter } from "next/navigation";
 
 type EmailPasswordProps = {
   user: User | null;
@@ -19,7 +20,7 @@ export default function EmailPasswordClient({ user }: EmailPasswordProps) {
   const dispatch = useAppDispatch();
   const currentUser = useAppSelector((state: RootState) => state.auth.user);
   const [status, setStatus] = useState<string | null>(null);
-
+  const router = useRouter();
   // Seed Redux with the initial user from the server
   useEffect(() => {
     dispatch(setUser(user));
@@ -54,6 +55,9 @@ export default function EmailPasswordClient({ user }: EmailPasswordProps) {
         password,
       });
       setStatus(error ? error.message : "Successfully logged in");
+      if (!error) {
+        router.push("/");
+      }
     }
   }
 

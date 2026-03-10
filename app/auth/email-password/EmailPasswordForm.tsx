@@ -12,6 +12,7 @@ const PASSWORD_RULES = [
 ];
 
 function validatePassword(value: string): { valid: boolean; message?: string } {
+  console.log("Password:", value);
   if (value.length < 8) return { valid: false, message: "Password must be at least 8 characters" };
   if (!/[A-Z]/.test(value)) return { valid: false, message: "Password must contain at least one uppercase letter" };
   if (!/[a-z]/.test(value)) return { valid: false, message: "Password must contain at least one lowercase letter" };
@@ -21,6 +22,8 @@ function validatePassword(value: string): { valid: boolean; message?: string } {
 
 export type EmailPasswordFormData = {
   mode: AuthMode;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
 };
@@ -34,6 +37,8 @@ type EmailPasswordFormProps = {
 export default function EmailPasswordForm({ onSubmit, onForgetPassword, status }: EmailPasswordFormProps) {
   const [mode, setMode] = useState<AuthMode>("signup");
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [showRulesTooltip, setShowRulesTooltip] = useState(false);
@@ -50,7 +55,7 @@ export default function EmailPasswordForm({ onSubmit, onForgetPassword, status }
         return;
       }
     }
-    await onSubmit({ mode, email, password });
+    await onSubmit({ mode, firstName, lastName, email, password });
   };
 
   const handleForgotPassword = async () => {
@@ -86,6 +91,35 @@ export default function EmailPasswordForm({ onSubmit, onForgetPassword, status }
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <h2 className="text-base mt-4 font-semibold text-white/90">{title}</h2>
+
+        { mode === "signup" && <div className="flex w-full gap-2">
+        <div className="w-1/2 space-y-1.5">
+          <label className="block text-xs font-medium text-white/90">
+            First Name
+          </label>
+          <input
+            type="text"
+            required
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none ring-offset-0 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-300"
+            placeholder="First Name"
+          />
+        </div>
+        <div className="w-1/2 space-y-1.5">
+          <label className="block text-xs font-medium text-white/90">
+            Last Name
+          </label>
+          <input
+            type="text"
+            required
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none ring-offset-0 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-300"
+            placeholder="Last Name"
+            />
+            </div>
+        </div>}
 
         <div className="space-y-1.5">
           <label className="block text-xs font-medium text-white/90">
@@ -140,6 +174,7 @@ export default function EmailPasswordForm({ onSubmit, onForgetPassword, status }
               setPassword(e.target.value);
               setPasswordError(null);
             }}
+            onBlur={(e) => setPasswordError(validatePassword(e.target.value).message ?? null)}
             className={`w-full rounded-md border px-3 py-2 text-sm outline-none ring-offset-0 focus:ring-2 focus:ring-zinc-300 ${passwordError ? "border-red-500 focus:border-red-500 focus:ring-red-200" : "border-zinc-300 focus:border-zinc-500"}`}
             placeholder="••••••••"
           />
