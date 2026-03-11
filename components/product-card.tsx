@@ -7,7 +7,9 @@ type ProductCardProps = {
 };
 
 export function ProductCard({ product }: ProductCardProps) {
-  const imageUrl = product.images[0] ?? "https://placehold.co/600x400/png?text=Product";
+  const imageUrl = product.images[0].includes("https") 
+  ? product.images[0] ?? "https://placehold.co/600x400/png?text=Product"
+  : "https://placehold.co/600x400/png?text=Product";
 
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md">

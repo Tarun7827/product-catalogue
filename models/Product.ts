@@ -11,6 +11,8 @@ export interface ProductDocument {
   rating: number;
   reviewCount: number;
   tags: string[];
+  source?: string;
+  externalId?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -67,9 +69,28 @@ const productSchema = new Schema<ProductDocument>(
       type: [String],
       default: [],
     },
+    source: {
+      type: String,
+      default: "local",
+      index: true,
+      trim: true,
+      lowercase: true,
+    },
+    externalId: {
+      type: Number,
+      index: true,
+    },
   },
   {
     timestamps: true,
+  },
+);
+
+productSchema.index(
+  { source: 1, externalId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { externalId: { $type: "number" } },
   },
 );
 
