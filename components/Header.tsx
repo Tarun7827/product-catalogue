@@ -24,23 +24,12 @@ function getDisplayName(user: User | null): string | null {
 }
 
 export default function Header() {
-  const [cartCount] = useState(3);
+  const cartCount = useAppSelector((state: RootState) => state.cart?.items?.length ?? 0);
   const router = useRouter();
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const displayName = getDisplayName(user);
   const supabase = getSupabaseBrowserClient();
-
-  // Sync Redux with current session on load (e.g. after refresh)
-  // useEffect(() => {
-  //   supabase.auth.getSession().then(({ data: { session } }) => {
-  //     dispatch(setUser(session?.user ?? null));
-  //   });
-  //   const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-  //     dispatch(setUser(session?.user ?? null));
-  //   });
-  //   return () => sub?.subscription.unsubscribe();
-  // }, [dispatch]);
 
   // Keep Redux user state in sync with Supabase auth events
   useEffect(() => {
@@ -65,6 +54,7 @@ export default function Header() {
 
   const handleCartClick = () => {
     console.log("Cart clicked");
+    router.push("/cart");
   };
 
   return (
