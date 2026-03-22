@@ -1,11 +1,13 @@
 "use client";
 
 import { API_ROUTES } from "@/lib/api-routes";
-import { useAppSelector } from "@/lib/store/hooks";
+import { clearCart } from "@/lib/store/cartSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import type { RootState } from "@/lib/store/store";
 import CartItem from "./CartItem";
 
 export default function CartPage() {
+  const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state: RootState) => state.cart?.items ?? []);
 
   const totalAmount = cartItems.reduce(
@@ -20,8 +22,10 @@ export default function CartPage() {
       method: "POST",
       body: JSON.stringify({ items: cartItems, totalAmount }),
     });
-    const data = await response.json();
-    console.log(data);
+    if (!response.ok) {
+      return;
+    }
+    dispatch(clearCart());
   };
 
   return (
