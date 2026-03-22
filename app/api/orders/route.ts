@@ -1,6 +1,9 @@
+"use server";
+
 import { NextResponse } from "next/server";
 import { createSupabseServerClient } from "@/lib/supabse/server-client";
 import { CartItem } from "@/types/CartItem";
+import { orderItem } from "@/types/Order";
 
 export async function POST(req: Request) {
   try {
@@ -73,3 +76,54 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function GET(req: Request) {
+  const order_items: orderItem[] = [];
+  try {
+    const supabase = await createSupabseServerClient();
+    const { data: { user },  error : authError} = await supabase.auth.getUser();
+
+    if(authError || !user) {
+      return NextResponse.json(
+        { message: "Unauthorized. Please sign in." },
+        { status: 401 }
+      );
+    }
+// console.log("User:", user);
+    const { data: orders, error } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("user_id", user.id);
+// console.log("Orders:", orders);
+    if(error) {
+      return NextResponse.json(
+        { message: error.message ?? "Failed to fetch orders." },
+        { status: 500 }
+      );
+    }
+// console.log("Orders:", orders);
+
+    for(const order of orders) {
+      const { data: orderItems, error: orderItemsError } = await supabase
+        .from("order_items")
+        .select("*")
+        .eq("order_id", order.id);
+      if(orderItemsError) {
+        return NextResponse.json(
+          { message: orderItemsError.message ?? "Failed to fetch order items." },
+          { status: 500 }
+        );
+      }
+      order_items.push(...orderItems);
+    }
+    // console.log("Order Items:", order_items);
+    return NextResponse.json(order_items, { status: 200 });
+  } catch (err) {
+    console.error("Orders API error:", err);
+    return NextResponse.json(
+      { message: "Failed to fetch orders." },
+      { status: 500 }
+    );
+  }
+}
+
