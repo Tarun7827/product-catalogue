@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabseServerClient } from "@/lib/supabse/server-client";
-import { Product } from "@/types/product";
+import { CartItem } from "@/types/CartItem";
 
 export async function POST(req: Request) {
   try {
@@ -44,13 +44,15 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+      console.log(`Items: ${JSON.stringify(body.items)}`);
 
       // 2️⃣ attach order_id to items
-    const items = body.items.map((item: Product & { quantity: number }) => ({
+    const items = body.items.map((item: CartItem) => (
+      {
         order_id: order.id,
-        product_id: item._id,
+        product_id: item.product._id,
         quantity: item.quantity,
-        price: item.price
+        price: item.product.price
     }))
 
     // 3️⃣ insert order_items
