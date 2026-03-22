@@ -2,12 +2,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { API_ROUTES } from "@/lib/api-routes";
 import { Product } from "@/types/product";
 
 async function fetchProducts(): Promise<Product[]> {
   // Frontend fetching is isolated in a hook so product pages can reuse
   // the same loading, caching, and error handling behavior.
-  const response = await fetch("/api/products");
+  const response = await fetch(API_ROUTES.products);
 
   if (!response.ok) {
     throw new Error("Failed to fetch products.");

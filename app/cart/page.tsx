@@ -1,5 +1,6 @@
 "use client";
 
+import { API_ROUTES } from "@/lib/api-routes";
 import { useAppSelector } from "@/lib/store/hooks";
 import type { RootState } from "@/lib/store/store";
 import CartItem from "./CartItem";
@@ -15,7 +16,7 @@ export default function CartPage() {
   
 
   const handleCheckout = async () => {
-    const response = await fetch("/api/orders", {
+    const response = await fetch(API_ROUTES.orders, {
       method: "POST",
       body: JSON.stringify({ items: cartItems, totalAmount }),
     });
