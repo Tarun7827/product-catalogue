@@ -12,7 +12,16 @@ export default function CartPage() {
     0
   );
 
-  console.log(cartItems);
+  
+
+  const handleCheckout = async () => {
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      body: JSON.stringify({ items: cartItems, totalAmount }),
+    });
+    const data = await response.json();
+    console.log(data);
+  };
 
   return (
     <main className="mx-auto min-h-screen max-w-7xl px-6 py-12">
@@ -40,9 +49,9 @@ export default function CartPage() {
               <h2 className="text-xl font-bold text-slate-900">Total</h2>
               <p className="text-2xl font-bold text-slate-900">${totalAmount.toFixed(2)}</p>
             </div>
-            <button className="mt-6 w-full rounded-lg bg-slate-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800">
-              Proceed to Checkout
-            </button>
+              <button onClick={handleCheckout} className="mt-6 w-full rounded-lg bg-slate-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800">
+                Proceed to Checkout
+              </button>
           </div>
         </>
       )}
