@@ -36,9 +36,6 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user === undefined) return;
-    if (!user) {
-      router.replace("/auth");
-    }
   }, [user, router]);
 
   const handleSignOut = async () => {
