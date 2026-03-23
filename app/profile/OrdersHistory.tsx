@@ -4,10 +4,11 @@ import { useOrders } from "@/hooks/use-orders";
 import { useProducts } from "@/hooks/use-products";
 import Image from "next/image";
 import { useMemo } from "react";
+import { orderItem } from "@/types/Order";
 
 export default function OrdersHistory() {
   const {
-    data: orders = [],
+    data: orders = [] as orderItem[],
     isLoading: ordersLoading,
     isError: ordersError,
     error: ordersQueryError,
@@ -47,35 +48,42 @@ export default function OrdersHistory() {
       <div>
         {ordersWithProducts.length > 0 && (
           <ul className="mx-auto flex w-full max-w-3xl flex-col gap-5">
-            {ordersWithProducts.map((order) => (
-              order.product && <li
-                key={order._id}
-                className="flex w-full items-center gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-              >
-                {order.product ? (
-                  <Image
-                    className="h-20 w-20 shrink-0 rounded-md object-cover"
-                    src={imageUrl(order.product.images)}
-                    alt={order.product.name}
-                    width={80}
-                    height={80}
-                  />
-                ) : (
-                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md bg-slate-100 text-xs text-slate-500">
-                    {productsLoading ? "…" : "?"}
-                  </div>
-                )}
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <h2 className="truncate font-semibold text-slate-900">
-                    {order.product != undefined ? order.product.name : (productsLoading ? "Loading…" : "Product unavailable")}
-                  </h2>
-                  <p className="text-sm text-slate-600">
-                    Price: ${order.price?.toFixed(2) ?? "0.00"}
-                  </p>
-                  <p className="text-sm text-slate-600">Quantity: {order.quantity ?? 0}</p>
-                </div>
-              </li>
-            ))}
+            {ordersWithProducts
+              .filter((order) => !!order.product)
+              .map((order) => {
+                const product = order.product!;
+                const listKey =
+                  order._id ||
+                  `${order.order_id ?? "order"}-${order.product_id ?? "product"}-${order.quantity ?? 0}-${
+                    order.createdAt ?? ""
+                  }`;
+
+                return (
+                  <li
+                    key={listKey}
+                    className="flex w-full items-center gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+                  >
+                    <Image
+                      className="h-20 w-20 shrink-0 rounded-md object-cover"
+                      src={imageUrl(product.images)}
+                      alt={product.name}
+                      width={80}
+                      height={80}
+                    />
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      <h2 className="truncate font-semibold text-slate-900">
+                        {product.name}
+                      </h2>
+                      <p className="text-sm text-slate-600">
+                        Price: ${order.price?.toFixed(2) ?? "0.00"}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        Quantity: {order.quantity ?? 0}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
           </ul>
         )}
         {!ordersLoading && orders.length === 0 && (

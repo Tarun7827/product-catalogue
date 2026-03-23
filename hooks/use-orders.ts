@@ -18,7 +18,7 @@ async function fetchOrders(): Promise<orderItem[]> {
 }
 
 export function useOrders() {
-  return useQuery({
+  return useQuery<orderItem[]>({
     queryKey: ordersQueryKey,
     queryFn: fetchOrders,
     staleTime: 60_000,
