@@ -1,12 +1,16 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+
 import { API_ROUTES } from "@/lib/api-routes";
+import { ordersQueryKey } from "@/hooks/use-orders";
 import { clearCart } from "@/lib/store/cartSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import type { RootState } from "@/lib/store/store";
 import CartItem from "./CartItem";
 
 export default function CartPage() {
+  const queryClient = useQueryClient();
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state: RootState) => state.cart?.items ?? []);
 
@@ -25,6 +29,7 @@ export default function CartPage() {
     if (!response.ok) {
       return;
     }
+    await queryClient.invalidateQueries({ queryKey: ordersQueryKey });
     dispatch(clearCart());
   };
 
