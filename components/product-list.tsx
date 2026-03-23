@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { ProductGrid } from "@/components/product-grid";
@@ -11,10 +12,10 @@ export function ProductList() {
 
   const { data: allProducts = [], isLoading, isError } = useProducts();
 
-  // Filter products based on the selected category from URL query param.
-  const products = selectedCategory
-    ? allProducts.filter((product) => product.categoryId === selectedCategory)
-    : allProducts;
+  const products = useMemo(() => {
+    if (!selectedCategory) return allProducts;
+    return allProducts.filter((product) => product.categoryId === selectedCategory);
+  }, [allProducts, selectedCategory]);
 
   if (isLoading) {
     return (

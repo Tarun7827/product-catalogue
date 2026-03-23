@@ -29,7 +29,7 @@ export default function CartItem({ item }: CartItemProps) {
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <ItemQuantityButton product={product} quantity={quantity} />
+        <ItemQuantityButton productId={product._id} quantity={quantity} />
         <p className="min-w-[5rem] text-right text-sm font-bold text-slate-900">
           ${(product.price * quantity).toFixed(2)}
         </p>

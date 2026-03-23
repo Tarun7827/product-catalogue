@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { memo, useCallback, useMemo } from "react";
 import { Product } from "@/types/product";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { addItem } from "@/lib/store/cartSlice";
@@ -11,29 +12,33 @@ type ProductCardProps = {
   product: Product;
 };
 
-export function ProductCard({ product }: ProductCardProps) {
+function selectCartQuantity(state: RootState, productId: string): number {
+  const items = state.cart?.items;
+  if (!items?.length) return 0;
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].product._id === productId) {
+      return items[i].quantity;
+    }
+  }
+  return 0;
+}
+
+function ProductCardInner({ product }: ProductCardProps) {
   const dispatch = useAppDispatch();
-  const cartItem = useAppSelector((state: RootState) =>
-    state.cart?.items?.find((item) => item.product._id === product._id)
+  const quantity = useAppSelector((state: RootState) =>
+    selectCartQuantity(state, product._id),
   );
 
-  console.log(`Product ${product.name} - In cart:`, !!cartItem);
+  const imageUrl = useMemo(() => {
+    const first = product.images[0];
+    return first?.includes("https")
+      ? first
+      : "https://placehold.co/600x400/png?text=Product";
+  }, [product.images]);
 
-  const imageUrl = product.images[0]?.includes("https")
-    ? product.images[0]
-    : "https://placehold.co/600x400/png?text=Product";
-
-  const handleAddToCart = () => {
-    console.log("=== Add to Cart Clicked ===");
-    console.log("Product:", product);
-    console.log("Cart items before:", cartItem);
-    try {
-      dispatch(addItem({ product, quantity: 1 }));
-      console.log("Item added successfully");
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-    }
-  };
+  const handleAddToCart = useCallback(() => {
+    dispatch(addItem({ product, quantity: 1 }));
+  }, [dispatch, product]);
 
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md">
@@ -63,8 +68,8 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <div className="pt-2">
-          {cartItem ? (
-            <ItemQuantityButton product={product} quantity={cartItem.quantity} />
+          {quantity > 0 ? (
+            <ItemQuantityButton productId={product._id} quantity={quantity} />
           ) : (
             <button
               type="button"
@@ -79,3 +84,8 @@ export function ProductCard({ product }: ProductCardProps) {
     </article>
   );
 }
+
+const ProductCard = memo(ProductCardInner);
+ProductCard.displayName = "ProductCard";
+
+export default ProductCard;

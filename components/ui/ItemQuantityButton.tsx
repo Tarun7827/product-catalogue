@@ -1,33 +1,34 @@
 "use client";
 
+import { memo, useCallback } from "react";
 import { incrementItem, decrementItem, removeItem } from "@/lib/store/cartSlice";
 import { useAppDispatch } from "@/lib/store/hooks";
-import { Product } from "@/types/product";
 
 type ItemQuantityButtonProps = {
-  product: Product;
+  productId: string;
   quantity: number;
 };
 
-export default function ItemQuantityButton({ product, quantity }: ItemQuantityButtonProps) {
+function ItemQuantityButtonInner({ productId, quantity }: ItemQuantityButtonProps) {
   const dispatch = useAppDispatch();
 
-  const handleIncrement = () => {
-    dispatch(incrementItem(product._id));
-  };
+  const handleIncrement = useCallback(() => {
+    dispatch(incrementItem(productId));
+  }, [dispatch, productId]);
 
-  const handleDecrement = () => {
+  const handleDecrement = useCallback(() => {
     if (quantity > 1) {
-      dispatch(decrementItem(product._id));
+      dispatch(decrementItem(productId));
     } else {
-      dispatch(removeItem(product._id));
+      dispatch(removeItem(productId));
     }
-  };
+  }, [dispatch, productId, quantity]);
 
   return (
     <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white">
       <button
-        className="px-3 py-1 text-lg font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+        type="button"
+        className="px-3 py-1 text-lg font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
         onClick={handleDecrement}
         aria-label="Decrease quantity"
       >
@@ -37,7 +38,8 @@ export default function ItemQuantityButton({ product, quantity }: ItemQuantityBu
         {quantity}
       </span>
       <button
-        className="px-3 py-1 text-lg font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+        type="button"
+        className="px-3 py-1 text-lg font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
         onClick={handleIncrement}
         aria-label="Increase quantity"
       >
@@ -46,3 +48,8 @@ export default function ItemQuantityButton({ product, quantity }: ItemQuantityBu
     </div>
   );
 }
+
+const ItemQuantityButton = memo(ItemQuantityButtonInner);
+ItemQuantityButton.displayName = "ItemQuantityButton";
+
+export default ItemQuantityButton;
