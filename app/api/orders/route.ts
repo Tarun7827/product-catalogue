@@ -1,9 +1,9 @@
-"use server";
-
 import { NextResponse } from "next/server";
 import { createSupabseServerClient } from "@/lib/supabse/server-client";
 import { CartItem } from "@/types/CartItem";
 import { orderItem } from "@/types/Order";
+import { connectToDatabase } from "@/lib/mongodb";
+import Product from "@/models/Product";
 
 export async function POST(req: Request) {
   try {
@@ -14,23 +14,46 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.error("Unauthorized. Please sign in.");
       return NextResponse.json(
         { message: "Unauthorized. Please sign in." },
         { status: 401 }
       );
     }
 
-    const body = await req.json();
-    const totalAmount = body.totalAmount ?? body.total_amount;
+    await connectToDatabase();
 
-    if (totalAmount == null || typeof totalAmount !== "number") {
+    const body = await req.json();
+    if (!Array.isArray(body.items) || body.items.length === 0) {
       return NextResponse.json(
-        { message: "Missing or invalid totalAmount." },
+        { message: "Missing or empty items." },
         { status: 400 }
       );
     }
 
-    const { data: order, error } = await supabase
+    let totalAmount = 0;
+    const orderItems = [];
+
+    for (const item of body.items) {
+      const product = await Product.findById(item.product._id);
+
+      if (!product) {
+        return NextResponse.json(
+          { message: "Product not found." },
+          { status: 404 }
+        );
+      }
+
+      totalAmount += product.price * item.quantity;
+
+      orderItems.push({
+        product_id: String(product._id),
+        quantity: item.quantity,
+        price: product.price,
+      });
+    }
+
+    const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id: user.id,
@@ -40,31 +63,27 @@ export async function POST(req: Request) {
       .select()
       .single();
 
-    if (error) {
-      console.error("Orders insert error:", error);
+    if (orderError || !order) {
       return NextResponse.json(
-        { message: error.message ?? "Failed to create order." },
+        { message: orderError?.message ?? "Failed to create order." },
         { status: 500 }
       );
     }
-      console.log(`Items: ${JSON.stringify(body.items)}`);
 
-      // 2️⃣ attach order_id to items
-    const items = body.items.map((item: CartItem) => (
-      {
-        order_id: order.id,
-        product_id: item.product._id,
-        quantity: item.quantity,
-        price: item.product.price
-    }))
+    const orderItemsWithOrderId = orderItems.map((item) => ({
+      order_id: order.id,
+      ...item
+    }));
 
-    // 3️⃣ insert order_items
-    const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(items)
+    const { error: orderItemsError } = await supabase
+      .from("order_items")
+      .insert(orderItemsWithOrderId);
 
-    if (itemsError) {
-        return NextResponse.json({ error: itemsError.message }, { status: 500 })
+    if (orderItemsError) {
+      return NextResponse.json(
+        { message: orderItemsError.message },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json(order, { status: 201 });
@@ -77,7 +96,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   const order_items: orderItem[] = [];
   try {
     const supabase = await createSupabseServerClient();
