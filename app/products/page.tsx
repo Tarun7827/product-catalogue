@@ -1,5 +1,6 @@
 import { ProductList } from "@/components/product-list";
 import CategoryBar from "@/components/CategoryBar";
+import { Suspense } from "react";
 
 export default function ProductsPage() {
   return (
@@ -13,9 +14,20 @@ export default function ProductsPage() {
         </h1>
       </div>
       <div className="w-full mt-10 mb-10bg-white p-4">
-        <CategoryBar />
+        <Suspense fallback={<div className="h-12 w-full rounded-2xl bg-slate-100" />}>
+          <CategoryBar />
+        </Suspense>
       </div>
-      <ProductList />
+      <Suspense fallback={<div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <div
+            key={index}
+            className="h-80 animate-pulse rounded-2xl border border-slate-200 bg-slate-100"
+          />
+        ))}
+      </div>}>
+        <ProductList />
+      </Suspense>
     </main>
   );
 }
