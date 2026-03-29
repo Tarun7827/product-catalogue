@@ -24,13 +24,30 @@ export default function CartPage() {
   const handleCheckout = async () => {
     const response = await fetch(API_ROUTES.orders, {
       method: "POST",
-      body: JSON.stringify({ items: cartItems, totalAmount }),
+      body: JSON.stringify({ items: cartItems }),
     });
+    
     if (!response.ok) {
+      console.error("Failed to create order");
       return;
     }
-    await queryClient.invalidateQueries({ queryKey: ordersQueryKey });
-    dispatch(clearCart());
+
+    const { razorpay } = await response.json();
+
+    const options: RazorpayOptions = {
+      key: razorpay.key,
+      amount: razorpay.amount,
+      currency: razorpay.currency,
+      order_id: razorpay.order_id,
+      handler: function (response: RazorpayResponse) {
+        console.log("Payment success", response);
+        queryClient.invalidateQueries({ queryKey: ordersQueryKey });
+        dispatch(clearCart());
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
   };
 
   return (
