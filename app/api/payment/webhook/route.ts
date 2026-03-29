@@ -45,18 +45,22 @@ export async function POST(req: Request) {
         );
       }
 
-      const { error } = await supabase.from("payments").insert({
-        order_id: orderId,
-        payment_provider: "Razorpay",
-        payment_id: event.payload.payment.entity.id,
-        amount: event.payload.payment.entity.amount,
-        status: "paid",
-      });
+      const { data: payment, error } = await supabase
+        .from("payments")
+        .insert({
+          order_id: orderId,
+          payment_provider: "Razorpay",
+          payment_id: event.payload.payment.entity.id,
+          amount: event.payload.payment.entity.amount,
+          status: "paid",
+        })
+        .select()
+        .single();
 
       if (error) {
         console.log("❌ DB error:", error);
       } else {
-        console.log("✅ Order updated");
+        console.log("✅ Order updated. payment", payment);
       }
 
       if (error) {
