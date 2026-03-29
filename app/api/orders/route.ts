@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { createSupabseServerClient } from "@/lib/supabse/server-client";
-import { CartItem } from "@/types/CartItem";
-import { orderItem } from "@/types/Order";
+import Razorpay from "razorpay";
 import { connectToDatabase } from "@/lib/mongodb";
+import { orderItem } from "@/types/Order";
 import Product from "@/models/Product";
+
+const razorpay = new Razorpay({
+  key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 export async function POST(req: Request) {
   try {
@@ -70,6 +75,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const razorpayOrder = await razorpay.orders.create({
+      amount: order.total_amount * 100,
+      currency: "USD",
+      receipt: `Order_${order.id}`,
+      notes: {
+        supabase_order_id: order.id,
+      }
+    });
+
     const orderItemsWithOrderId = orderItems.map((item) => ({
       order_id: order.id,
       ...item
@@ -86,7 +100,15 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json(order, { status: 201 });
+    return NextResponse.json({
+      order,
+      razorpay: {
+        order_id: razorpayOrder.id,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      }
+    }, { status: 201 });
   } catch (err) {
     console.error("Orders API error:", err);
     return NextResponse.json(
