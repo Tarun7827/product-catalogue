@@ -45,14 +45,13 @@ export async function POST(req: Request) {
         );
       }
 
-      const { error } = await supabase
-        .from("orders")
-        .update({
-          status: "paid",
-          razorpay_payment_id: event.payload.payment.entity.id,
-          razorpay_order_id: event.payload.payment.entity.order_id,
-        })
-        .eq("id", orderId);
+      const { error } = await supabase.from("payments").insert({
+        order_id: orderId,
+        payment_provider: "Razorpay",
+        payment_id: event.payload.payment.entity.id,
+        amount: event.payload.payment.entity.amount,
+        status: "paid",
+      });
 
       if (error) {
         console.log("❌ DB error:", error);
