@@ -31,7 +31,8 @@ export async function POST(req: Request) {
     console.log("Signature verified");
     const event = JSON.parse(body);
     console.log("Event:", event);
-    if (event.event === "payment.captured") {
+    console.log("Event event type:", typeof event.event);
+    if (event.event == "payment.captured") {
       console.log("Payment captured");
       const supabase = await createSupabseServerClient();
       const orderIdRaw = event.payload.payment.entity.notes.supabase_order_id;
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
         .update({
           status: "paid",
         })
-        .eq("id", orderIdRaw.toString());
+        .eq("id", orderIdRaw);
 
       // Prefer to use the error from the update first, then from payments insert
       if (error) {
@@ -70,7 +71,7 @@ export async function POST(req: Request) {
 
       // Optionally insert (or upsert) a row into payments for tracking
       const { error: paymentError } = await supabase.from("payments").insert({
-        order_id: orderIdRaw.toString(),
+        order_id: orderIdRaw,
         payment_provider: "Razorpay",
         payment_id: event.payload.payment.entity.id,
         amount: event.payload.payment.entity.amount,
