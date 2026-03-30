@@ -69,14 +69,13 @@ export async function POST(req: Request) {
       } else {
         console.log("✅ Order updated.");
       }
-      let amount_razorpay = 0;
-      amount_razorpay = event.payload.payment.entity.amount;
+
       // Optionally insert (or upsert) a row into payments for tracking
       const { error: paymentError } = await supabase.from("payments").insert({
-        order_id: orderIdInt8.toString(),
+        order_id: orderIdInt8,
         payment_provider: "Razorpay",
         payment_id: event.payload.payment.entity.id,
-        amount: amount_razorpay,
+        amount: event.payload.payment.entity.amount,
         status: event.payload.payment.entity.status,
       });
 
