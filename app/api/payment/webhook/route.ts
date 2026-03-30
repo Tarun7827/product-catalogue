@@ -31,24 +31,16 @@ export async function POST(req: Request) {
     console.log("Signature verified");
     const event = JSON.parse(body);
     console.log("Event:", event);
-    console.log("Event event type:", typeof event.event);
     if (event.event == "payment.captured") {
       console.log("Payment captured");
       const supabase = await createSupabseServerClient();
       const orderIdRaw = event.payload.payment.entity.notes.supabase_order_id;
       console.log("Order ID:", orderIdRaw);
-      console.log("Event:", event);
+      console.log("Order ID type:", typeof orderIdRaw);
       if (!orderIdRaw) {
         console.error("No order ID in payment notes");
         return NextResponse.json(
           { message: "Order ID not found" },
-          { status: 400 },
-        );
-      }
-
-      if (typeof orderIdRaw !== "string" || !/^\d+$/.test(orderIdRaw)) {
-        return NextResponse.json(
-          { message: "Invalid order ID format" },
           { status: 400 },
         );
       }
@@ -86,7 +78,7 @@ export async function POST(req: Request) {
         );
       }
     }
-
+    console.log("Payment successful");
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (err) {
     console.error("Webhook error:", err);
