@@ -52,8 +52,6 @@ export async function POST(req: Request) {
         );
       }
 
-      const orderIdInt8 = BigInt(orderIdRaw);
-
       // Update the order status in the "orders" table instead of inserting a row into "payments"
       // You can also upsert into payments, but typically you want to update the order
       const { error } = await supabase
@@ -61,7 +59,7 @@ export async function POST(req: Request) {
         .update({
           status: "paid",
         })
-        .eq("id", orderIdInt8.toString());
+        .eq("id", orderIdRaw.toString());
 
       // Prefer to use the error from the update first, then from payments insert
       if (error) {
@@ -72,7 +70,7 @@ export async function POST(req: Request) {
 
       // Optionally insert (or upsert) a row into payments for tracking
       const { error: paymentError } = await supabase.from("payments").insert({
-        order_id: orderIdInt8,
+        order_id: orderIdRaw.toString(),
         payment_provider: "Razorpay",
         payment_id: event.payload.payment.entity.id,
         amount: event.payload.payment.entity.amount,
