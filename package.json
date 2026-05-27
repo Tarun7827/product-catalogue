@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "lighthouse": "tsx scripts/lighthouse.ts",
+    "analyze": "cross-env ANALYZE=true next build"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
@@ -24,12 +26,15 @@
     "react-redux": "^9.2.0"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.4",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "lighthouse": "^12.8.2",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
