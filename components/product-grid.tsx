@@ -12,8 +12,13 @@ type ProductGridProps = {
 function ProductGridInner({ products }: ProductGridProps) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-      {products.map((product) => (
-        <ProductCard key={product._id} product={product} />
+      {products.map((product, index) => (
+        <ProductCard
+          key={product._id}
+          product={product}
+          // First card's image is the LCP element — tell browser to preload it
+          priority={index === 0}
+        />
       ))}
     </div>
   );

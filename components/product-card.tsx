@@ -10,6 +10,7 @@ import ItemQuantityButton from "./ui/ItemQuantityButton";
 
 type ProductCardProps = {
   product: Product;
+  priority?: boolean;
 };
 
 function selectCartQuantity(state: RootState, productId: string): number {
@@ -23,7 +24,7 @@ function selectCartQuantity(state: RootState, productId: string): number {
   return 0;
 }
 
-function ProductCardInner({ product }: ProductCardProps) {
+function ProductCardInner({ product, priority = false }: ProductCardProps) {
   const dispatch = useAppDispatch();
   const quantity = useAppSelector((state: RootState) =>
     selectCartQuantity(state, product._id),
@@ -42,13 +43,14 @@ function ProductCardInner({ product }: ProductCardProps) {
 
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md">
-      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+      <div className="relative aspect-4/3 overflow-hidden bg-slate-100">
         <Image
           src={imageUrl}
           alt={product.name}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          priority={priority}
         />
       </div>
 
