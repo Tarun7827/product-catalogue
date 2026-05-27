@@ -1,7 +1,22 @@
 import type { NextConfig } from "next";
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 const nextConfig: NextConfig = {
+  // Remove console.log calls in production builds
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+
   images: {
+    // Allow SVG placeholder images (placehold.co serves SVG by default)
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "placehold.co" },
@@ -17,8 +32,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "placehol1d.co" },
       { protocol: "https", hostname: "placeimg.com" },
       { protocol: "https", hostname: "pravatar.cc" },
+      { protocol: "https", hostname: "encrypted-tbn0.gstatic.com" },
     ],
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

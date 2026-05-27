@@ -21,5 +21,9 @@ export function useProducts() {
   return useQuery({
     queryKey: ["products"],
     queryFn: fetchProducts,
+    // Keep data fresh for 5 minutes — avoids re-fetching on every tab focus
+    staleTime: 5 * 60 * 1000,
+    // Hold cached data for 10 minutes after all subscribers unmount
+    gcTime: 10 * 60 * 1000,
   });
 }
