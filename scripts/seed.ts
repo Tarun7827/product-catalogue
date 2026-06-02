@@ -32,6 +32,15 @@ type EscuelaProduct = {
   updatedAt: string;
 };
 
+const MAX_IMAGES_PER_PRODUCT = 3;
+const FALLBACK_IMAGE = "https://placehold.co/640x480/png?text=Product";
+const BLOCKED_IMAGE_HOSTS = new Set([
+  "placehold.co",
+  "placeimg.com",
+  "picsum.photos",
+  "placehol1d.co",
+]);
+
 function toTags(input: string): string[] {
   return Array.from(
     new Set(
@@ -44,6 +53,39 @@ function toTags(input: string): string[] {
         .slice(0, 8),
     ),
   );
+}
+
+function isUsableRemoteImage(image: string): boolean {
+  try {
+    const url = new URL(image);
+    return url.protocol === "https:" && !BLOCKED_IMAGE_HOSTS.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function toOptimizedImageUrl(image: string): string {
+  const url = new URL(image);
+
+  if (url.hostname === "i.imgur.com") {
+    url.pathname = url.pathname.replace(
+      /\/([^/.]+)(\.(?:jpe?g|png|webp))$/i,
+      "/$1l$2",
+    );
+  }
+
+  return url.toString();
+}
+
+function normalizeImages(images: unknown): string[] {
+  const normalized = Array.isArray(images)
+    ? images
+        .filter((img): img is string => typeof img === "string" && isUsableRemoteImage(img))
+        .slice(0, MAX_IMAGES_PER_PRODUCT)
+        .map(toOptimizedImageUrl)
+    : [];
+
+  return normalized.length ? normalized : [FALLBACK_IMAGE];
 }
 
 async function fetchEscuelaProducts(): Promise<EscuelaProduct[]> {
@@ -94,15 +136,13 @@ async function seedDatabase() {
         // Fallback: store the slug string if category insert was skipped.
         categorySlug;
 
-      const images = Array.isArray(p.images) ? p.images.filter((img) => typeof img === "string") : [];
-
       return {
         name: p.title,
         description: p.description ?? "",
         price: typeof p.price === "number" ? p.price : 0,
         categoryId: mappedCategoryId,
         brand: p.category?.name ?? "EscuelaJS",
-        images,
+        images: normalizeImages(p.images),
         stock: 50,
         rating: 0,
         reviewCount: 0,
