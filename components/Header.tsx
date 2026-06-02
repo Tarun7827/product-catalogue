@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Input } from "./ui/input";
@@ -15,7 +15,6 @@ import { User } from "@supabase/supabase-js";
 
 function getDisplayName(user: User | null): string | null {
   if (!user) return null;
-  console.log(user.user_metadata);
   const name =
     user.user_metadata?.displayName ??
     user.user_metadata?.name ??
@@ -45,7 +44,6 @@ export default function Header() {
   }, [supabase, dispatch]);
 
   const handleSearch = () => {
-    console.log("Search clicked");
   };
 
   const handleLogin = () => {
@@ -53,7 +51,6 @@ export default function Header() {
   };
 
   const handleCartClick = () => {
-    console.log("Cart clicked");
     router.push("/cart");
   };
 

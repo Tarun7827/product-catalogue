@@ -20,7 +20,7 @@ export function useCategories() {
   return useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    // Categories rarely change — cache aggressively
+    // Categories rarely change, so cache aggressively.
     staleTime: 10 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
   });
