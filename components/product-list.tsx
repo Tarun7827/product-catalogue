@@ -11,7 +11,10 @@ const PAGE_SIZE = 12;
 export function ProductList() {
   const searchParams = useSearchParams();
   const selectedCategory = searchParams.get("category");
-  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<{
+    category: string | null;
+    page: number;
+  }>({ category: selectedCategory, page: 1 });
 
   const { data: allProducts = [], isLoading, isError } = useProducts();
 
@@ -20,11 +23,13 @@ export function ProductList() {
     return allProducts.filter((p) => p.categoryId === selectedCategory);
   }, [allProducts, selectedCategory]);
 
-  // Reset to page 1 whenever the category filter changes
-  useMemo(() => {
-    setPage(1);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory]);
+  const page = pagination.category === selectedCategory ? pagination.page : 1;
+  const setPageForCategory = (getPage: (page: number) => number) => {
+    setPagination((current) => ({
+      category: selectedCategory,
+      page: getPage(current.category === selectedCategory ? current.page : 1),
+    }));
+  };
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -83,7 +88,7 @@ export function ProductList() {
         <p className="text-sm text-slate-600">
           Showing{" "}
           <span className="font-semibold text-slate-900">
-            {start}–{end}
+            {start}-{end}
           </span>{" "}
           of{" "}
           <span className="font-semibold text-slate-900">{filtered.length}</span>{" "}
@@ -105,10 +110,10 @@ export function ProductList() {
           <button
             type="button"
             disabled={safePage === 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => setPageForCategory((p) => Math.max(1, p - 1))}
             className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            ← Previous
+            Previous
           </button>
 
           <div className="flex gap-1">
@@ -117,23 +122,23 @@ export function ProductList() {
                 (p) =>
                   p === 1 || p === totalPages || Math.abs(p - safePage) <= 1,
               )
-              .reduce<(number | "…")[]>((acc, p, idx, arr) => {
+              .reduce<(number | "...")[]>((acc, p, idx, arr) => {
                 if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) {
-                  acc.push("…");
+                  acc.push("...");
                 }
                 acc.push(p);
                 return acc;
               }, [])
               .map((p, i) =>
-                p === "…" ? (
+                p === "..." ? (
                   <span key={`ellipsis-${i}`} className="px-2 py-2 text-sm text-slate-400">
-                    …
+                    ...
                   </span>
                 ) : (
                   <button
                     key={p}
                     type="button"
-                    onClick={() => setPage(p as number)}
+                    onClick={() => setPageForCategory(() => p as number)}
                     className={`min-w-9 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                       p === safePage
                         ? "border-slate-900 bg-slate-900 text-white"
@@ -149,10 +154,10 @@ export function ProductList() {
           <button
             type="button"
             disabled={safePage === totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            onClick={() => setPageForCategory((p) => Math.min(totalPages, p + 1))}
             className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Next →
+            Next
           </button>
         </div>
       )}
